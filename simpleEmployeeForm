@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <title>Employee Information</title>
+</head>
+<body>
+
+    <div class="container mt-5">
+        <form id="employeeForm">
+            <div class="form-group">
+                <label for="employeeCode">Employee Code:</label>
+                <input type="text" class="form-control" id="employeeCode" required>
+            </div>
+            <div class="form-group">
+                <label for="firstName">First Name:</label>
+                <input type="text" class="form-control" id="firstName" required>
+            </div>
+            <div class="form-group">
+                <label for="mobileNumber">Mobile Number:</label>
+                <input type="text" class="form-control" id="mobileNumber" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Employee</button>
+        </form>
+
+        <div class="mt-3">
+            <h3>Employee List</h3>
+            <div class="form-group">
+                <label for="searchEmployee">Search Employee:</label>
+                <input type="text" class="form-control" id="searchEmployee" oninput="searchEmployee()" placeholder="Enter employee code or name">
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Employee Code</th>
+                        <th>First Name</th>
+                        <th>Mobile Number</th>
+                    </tr>
+                </thead>
+                <tbody id="employeeList">
+                    <!-- Employee list will be displayed here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $("#employeeForm").submit(function (event) {
+                event.preventDefault();
+
+                // Get values from form
+                var code = $("#employeeCode").val();
+                var firstName = $("#firstName").val();
+                var mobileNumber = $("#mobileNumber").val();
+
+                // Check for empty fields
+                if (!code || !firstName) {
+                    // Show alert for empty fields
+                    alert("Employee code and first name are required!");
+                    return;
+                }
+
+                // Check for duplicates
+                if (isDuplicate(code)) {
+                    // Show alert for duplicate
+                    alert("Employee with code " + code + " already exists!");
+                    return;
+                }
+
+                // Show progress bar while processing
+                var progressBar = $('<div class="progress mt-3"><div class="progress-bar" role="progressbar" style="width: 0%;"></div></div>');
+                $("#employeeForm").after(progressBar);
+
+                // Simulate saving data (replace with your actual save logic)
+                var progress = 0;
+                var interval = setInterval(function () {
+                    progress += 10;
+                    progressBar.find('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress);
+
+                    if (progress >= 100) {
+                        clearInterval(interval);
+
+                        // Create a new table row
+                        var tableRow = $("<tr>")
+                            .append($("<td>").text(code))
+                            .append($("<td>").text(firstName))
+                            .append($("<td>").text(mobileNumber));
+
+                        // Append the table row to the employee list
+                        $("#employeeList").append(tableRow);
+
+                        // Clear the form fields
+                        $("#employeeForm")[0].reset();
+
+                        // Remove progress bar
+                        progressBar.remove();
+                    }
+                }, 200); // Simulated 200 milliseconds interval, adjust as needed
+            });
+
+            window.searchEmployee = function () {
+                var input, filter, table, tr, td, i, txtValue;
+                input = document.getElementById("searchEmployee");
+                filter = input.value.toUpperCase();
+                table = document.getElementById("employeeList");
+                tr = table.getElementsByTagName("tr");
+
+                for (i = 0; i < tr.length; i++) {
+                    td = tr[i].getElementsByTagName("td")[0];
+                    if (td) {
+                        txtValue = td.textContent || td.innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            tr[i].style.display = "";
+                        } else {
+                            tr[i].style.display = "none";
+                        }
+                    }
+                }
+            };
+
+            function isDuplicate(code) {
+                var codes = $("#employeeList td:first-child").map(function () {
+                    return $(this).text();
+                }).get();
+                return codes.includes(code);
+            }
+        });
+    </script>
+
+</body>
+</html>
