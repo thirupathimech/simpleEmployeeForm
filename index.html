@@ -92,7 +92,7 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-    <script>
+     <script>
         let employeeDetails = [];
 
         function saveDetails() {
@@ -111,10 +111,33 @@
                 address: address,
                 pincode: pincode
             });
-
+            saveToCookies();
             document.getElementById('payrollForm').reset();
 
             displayEmployeeDetails();
+        }
+
+        function saveToCookies() {
+            // Convert the employeeDetails array to a JSON string
+            let employeeDetailsJSON = JSON.stringify(employeeDetails);
+
+            // Set the cookie with the JSON string
+            document.cookie = `employeeDetails=${employeeDetailsJSON}; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/`;
+        }
+
+        // Function to retrieve employeeDetails from cookies
+        function retrieveFromCookies() {
+            // Get the value of the 'employeeDetails' cookie
+            let cookieValue = document.cookie.replace(/(?:(?:^|.*;\s*)employeeDetails\s*=\s*([^;]*).*$)|^.*$/, "$1");
+
+            // Check if the cookie exists
+            if (cookieValue) {
+                // Parse the JSON string to reconstruct the array
+                employeeDetails = JSON.parse(cookieValue);
+
+                // Display the retrieved employeeDetails
+                displayEmployeeDetails();
+            }
         }
 
         function displayEmployeeDetails() {
@@ -152,9 +175,13 @@
             displayEmployeeDetails();
         }
 
+
         function deleteDetails(index) {
-            employeeDetails.splice(index, 1);
-            displayEmployeeDetails();
+            if (confirm("Are you sure you want to delete this record?")) {
+                employeeDetails.splice(index, 1);
+                saveToCookies();
+                displayEmployeeDetails();
+            }
         }
 
         function searchDetails() {
@@ -216,6 +243,8 @@
             // Remove the link from the document
             document.body.removeChild(link);
         }
+        // Call retrieveFromCookies when the page loads to retrieve the saved data
+        window.onload = retrieveFromCookies;
     </script>
 </body>
 
