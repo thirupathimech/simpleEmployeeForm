@@ -1,140 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <title>Employee Information</title>
+    <title>Payroll Application</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        /* Thirupathi G Program */
+        /* Add custom styles here */
+    </style>
 </head>
+
 <body>
 
     <div class="container mt-5">
-        <form id="employeeForm">
-            <div class="form-group">
-                <label for="employeeCode">Employee Code:</label>
-                <input type="text" class="form-control" id="employeeCode" required>
-            </div>
-            <div class="form-group">
-                <label for="firstName">First Name:</label>
-                <input type="text" class="form-control" id="firstName" required>
-            </div>
-            <div class="form-group">
-                <label for="mobileNumber">Mobile Number:</label>
-                <input type="text" class="form-control" id="mobileNumber" required>
-            </div>
+        <h2>Thirupathi G Software Payroll</h2>
+        <form id="payrollForm">
+            <label for="firstName">First Name:</label>
+            <input type="text" id="firstName" class="form-control" required>
 
-            <button type="submit" class="btn btn-primary">Save Employee</button>
+            <label for="lastName">Last Name:</label>
+            <input type="text" id="lastName" class="form-control" required>
+
+            <label for="dob">Date of Birth:</label>
+            <input type="date" id="dob" class="form-control" required>
+
+            <label for="mobile">Mobile Number:</label>
+            <input type="tel" id="mobile" class="form-control" pattern="[0-9]{10}" required>
+
+            <label for="address">Address:</label>
+            <input type="text" id="address" class="form-control" required>
+
+            <label for="pincode">Pin Code:</label>
+            <input type="text" id="pincode" class="form-control" pattern="[0-9]{6}" required>
+
+            <button type="button" class="btn btn-primary mt-3" onclick="saveDetails()">Save</button>
         </form>
 
-        <div class="mt-3">
-            <h3>Employee List</h3>
-            <div class="form-group">
-                <label for="searchEmployee">Search Employee:</label>
-                <input type="text" class="form-control" id="searchEmployee" oninput="searchEmployee()" placeholder="Enter employee code or name">
-            </div>
+        <div class="mt-4">
+            <h3>Employee Details</h3>
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Employee Code</th>
                         <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Date of Birth</th>
                         <th>Mobile Number</th>
+                        <th>Address</th>
+                        <th>Pin Code</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
                     </tr>
                 </thead>
-                <tbody id="employeeList">
-                    <!-- Employee list will be displayed here -->
+                <tbody id="employeeTableBody">
+                    <!-- Employee details will be added here dynamically -->
                 </tbody>
             </table>
         </div>
+
+        <div class="mt-4">
+            <label for="searchInput">Search:</label>
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by First Name or Last Name">
+            <button type="button" class="btn btn-secondary mt-2" onclick="searchDetails()">Search</button>
+        </div>
+
+        <div class="mt-4">
+            <h3>Search Results</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Date of Birth</th>
+                        <th>Mobile Number</th>
+                        <th>Address</th>
+                        <th>Pin Code</th>
+                    </tr>
+                </thead>
+                <tbody id="searchResultTableBody">
+                    <!-- Search results will be added here dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4">
+            <button type="button" class="btn btn-success" onclick="downloadExcel()">Download Excel</button>
+        </div>
     </div>
 
-    <!-- jQuery and Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <script>
-        $(document).ready(function () {
-            $("#employeeForm").submit(function (event) {
-                event.preventDefault();
+        let employeeDetails = [];
 
-                // Get values from form
-                var code = $("#employeeCode").val();
-                var firstName = $("#firstName").val();
-                var mobileNumber = $("#mobileNumber").val();
+        function saveDetails() {
+            let firstName = document.getElementById('firstName').value;
+            let lastName = document.getElementById('lastName').value;
+            let dob = document.getElementById('dob').value;
+            let mobile = document.getElementById('mobile').value;
+            let address = document.getElementById('address').value;
+            let pincode = document.getElementById('pincode').value;
 
-                // Check for empty fields
-                if (!code || !firstName) {
-                    // Show alert for empty fields
-                    alert("Employee code and first name are required!");
-                    return;
-                }
-
-                // Check for duplicates
-                if (isDuplicate(code)) {
-                    // Show alert for duplicate
-                    alert("Employee with code " + code + " already exists!");
-                    return;
-                }
-
-                // Show progress bar while processing
-                var progressBar = $('<div class="progress mt-3"><div class="progress-bar" role="progressbar" style="width: 0%;"></div></div>');
-                $("#employeeForm").after(progressBar);
-
-                // Simulate saving data (replace with your actual save logic)
-                var progress = 0;
-                var interval = setInterval(function () {
-                    progress += 10;
-                    progressBar.find('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress);
-
-                    if (progress >= 100) {
-                        clearInterval(interval);
-
-                        // Create a new table row
-                        var tableRow = $("<tr>")
-                            .append($("<td>").text(code))
-                            .append($("<td>").text(firstName))
-                            .append($("<td>").text(mobileNumber));
-
-                        // Append the table row to the employee list
-                        $("#employeeList").append(tableRow);
-
-                        // Clear the form fields
-                        $("#employeeForm")[0].reset();
-
-                        // Remove progress bar
-                        progressBar.remove();
-                    }
-                }, 200); // Simulated 200 milliseconds interval, adjust as needed
+            employeeDetails.push({
+                firstName: firstName,
+                lastName: lastName,
+                dob: dob,
+                mobile: mobile,
+                address: address,
+                pincode: pincode
             });
 
-            window.searchEmployee = function () {
-                var input, filter, table, tr, td, i, txtValue;
-                input = document.getElementById("searchEmployee");
-                filter = input.value.toUpperCase();
-                table = document.getElementById("employeeList");
-                tr = table.getElementsByTagName("tr");
+            document.getElementById('payrollForm').reset();
 
-                for (i = 0; i < tr.length; i++) {
-                    td = tr[i].getElementsByTagName("td")[0];
-                    if (td) {
-                        txtValue = td.textContent || td.innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                        } else {
-                            tr[i].style.display = "none";
-                        }
-                    }
-                }
-            };
+            displayEmployeeDetails();
+        }
 
-            function isDuplicate(code) {
-                var codes = $("#employeeList td:first-child").map(function () {
-                    return $(this).text();
-                }).get();
-                return codes.includes(code);
-            }
-        });
+        function displayEmployeeDetails() {
+            let tableBody = document.getElementById('employeeTableBody');
+            tableBody.innerHTML = '';
+
+            employeeDetails.forEach((employee, index) => {
+                let row = tableBody.insertRow();
+                row.innerHTML = `
+          <td>${employee.firstName}</td>
+          <td>${employee.lastName}</td>
+          <td>${employee.dob}</td>
+          <td>${employee.mobile}</td>
+          <td>${employee.address}</td>
+          <td>${employee.pincode}</td>
+          <td><button class="btn btn-warning" onclick="editDetails(${index})">Edit</button></td>
+          <td><button class="btn btn-danger" onclick="deleteDetails(${index})">Delete</button></td>
+        `;
+            });
+        }
+
+        function editDetails(index) {
+            let employee = employeeDetails[index];
+            document.getElementById('firstName').value = employee.firstName;
+            document.getElementById('lastName').value = employee.lastName;
+            document.getElementById('dob').value = employee.dob;
+            document.getElementById('mobile').value = employee.mobile;
+            document.getElementById('address').value = employee.address;
+            document.getElementById('pincode').value = employee.pincode;
+
+            // Remove the edited employee from the array
+            employeeDetails.splice(index, 1);
+
+            // Update the table
+            displayEmployeeDetails();
+        }
+
+        function deleteDetails(index) {
+            employeeDetails.splice(index, 1);
+            displayEmployeeDetails();
+        }
+
+        function searchDetails() {
+            let searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            let filteredEmployees = employeeDetails.filter(employee =>
+                employee.firstName.toLowerCase().includes(searchTerm) ||
+                employee.lastName.toLowerCase().includes(searchTerm)
+            );
+
+            displayFilteredDetails(filteredEmployees);
+        }
+
+        function displayFilteredDetails(filteredEmployees) {
+            let tableBody = document.getElementById('searchResultTableBody');
+            tableBody.innerHTML = '';
+
+            filteredEmployees.forEach(employee => {
+                let row = tableBody.insertRow();
+                row.innerHTML = `
+          <td>${employee.firstName}</td>
+          <td>${employee.lastName}</td>
+          <td>${employee.dob}</td>
+          <td>${employee.mobile}</td>
+          <td>${employee.address}</td>
+          <td>${employee.pincode}</td>
+        `;
+            });
+        }
+
+        function downloadExcel() {
+            // Create a CSV content
+            let content = "Thirupathi G Software\n"; // Your company name as the header
+            content += "First Name,Last Name,Date of Birth,Mobile Number,Address,Pin Code\n";
+
+            employeeDetails.forEach(employee => {
+                content += `${employee.firstName},${employee.lastName},${employee.dob},${employee.mobile},${employee.address},${employee.pincode}\n`;
+            });
+
+            // Create a Blob with the CSV content
+            let blob = new Blob([content], {
+                type: 'text/csv'
+            });
+
+            // Create a link element
+            let link = document.createElement('a');
+
+            // Set the href attribute with the object URL of the Blob
+            link.href = URL.createObjectURL(blob);
+
+            // Set the download attribute with the desired file name
+            link.download = 'EmployeeDetails.csv';
+
+            // Append the link to the document
+            document.body.appendChild(link);
+
+            // Trigger a click on the link to start the download
+            link.click();
+
+            // Remove the link from the document
+            document.body.removeChild(link);
+        }
     </script>
-
 </body>
+
 </html>
