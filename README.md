@@ -1,7 +1,7 @@
 # Payroll Application - Thirupathi G
 
 This repository contains the source code for a Payroll Application developed by Thirupathi G.
-VIEW LINK : https://thirupathimech.github.io/simpleEmployeeForm/
+https://thirupathimech.github.io/simpleEmployeeForm/
 
 ## Table of Contents
 
